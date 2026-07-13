@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DocuMind AI - Premium AI Document Analyzer. Extract insights, summaries, and chat with your documents instantly.">
+    <meta name="theme-color" content="#1e1e2f">
+    <title>DocuMind AI | Premium Document Analyzer</title>
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google Fonts for Professional Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF and Word Document Parsers -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    
+    <!-- Markdown Parser for AI Output -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- HTML to PDF for Exporting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="dark-mode">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="developer-info"><i class="fas fa-laptop-code"></i> Developer: Md Sharik Ansari</span>
+        <span class="email-info"><i class="fas fa-envelope"></i> Email: mdsharikansari86037@gmail.com</span>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Light/Dark Mode" aria-label="Toggle Theme">
+            <i class="fas fa-sun"></i>
+        </button>
+    </div>
+
+    <!-- Main Application Layout -->
+    <div class="app-wrapper">
+        
+        <!-- Left Sidebar: History -->
+        <aside id="history-sidebar" class="sidebar glass-sidebar left-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-history"></i> Recent History</h2>
+                <button id="close-history" class="icon-btn hide-desktop"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="sidebar-content" id="history-list">
+                <!-- History Items will be injected here via JS -->
+            </div>
+            <div class="sidebar-footer">
+                <button id="clear-history-btn" class="btn-outline-danger"><i class="fas fa-trash-alt"></i> Clear History</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Mobile Sidebar Toggles -->
+            <div class="mobile-toggles">
+                <button id="open-history-mobile" class="btn-glass"><i class="fas fa-history"></i> History</button>
+                <button id="open-chat-mobile" class="btn-glass"><i class="fas fa-comments"></i> Chat</button>
+            </div>
+
+            <div class="glass-container tilt-effect">
+                <header class="hero-section">
+                    <h1>DocuMind <span class="gradient-text">AI</span></h1>
+                    <p>Enterprise-Grade Document Analysis & Intelligence</p>
+                </header>
+
+                <section class="features-section">
+                    <span class="badge"><i class="fas fa-bolt"></i> Fast Processing</span>
+                    <span class="badge"><i class="fas fa-brain"></i> Gemini Powered</span>
+                    <span class="badge"><i class="fas fa-lock"></i> Privacy First</span>
+                </section>
+
+                <section class="input-section">
+                    <!-- Drag and Drop Upload Area -->
+                    <div class="upload-area" id="drop-zone">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Drag & Drop your document here</h3>
+                        <p class="file-support">Supports PDF, DOCX, TXT</p>
+                        <div class="upload-container">
+                            <input type="file" id="file-upload" accept=".txt,.pdf,.docx" style="display: none;">
+                            <label for="file-upload" class="upload-btn"><i class="fas fa-folder-open"></i> Browse Files</label>
+                        </div>
+                        <span id="file-name" class="file-name">Or paste your text below...</span>
+                    </div>
+
+                    <textarea id="document-input" placeholder="Paste your document, report, or notes here for instant AI analysis..." rows="6" aria-label="Document Input"></textarea>
+                    
+                    <!-- Real-time Statistics Panel -->
+                    <div class="stats-panel">
+                        <div class="stat-box"><i class="fas fa-font"></i> Words: <span id="word-count">0</span></div>
+                        <div class="stat-box"><i class="fas fa-text-width"></i> Chars: <span id="char-count">0</span></div>
+                        <div class="stat-box"><i class="fas fa-clock"></i> Read Time: <span id="read-time">0 min</span></div>
+                        <div class="stat-box"><i class="fas fa-language"></i> Lang: <span id="lang-detect">Auto</span></div>
+                    </div>
+
+                    <!-- Analysis Configuration Cards -->
+                    <div class="analysis-config">
+                        <label for="analysis-type"><i class="fas fa-cogs"></i> Select AI Operation:</label>
+                        <select id="analysis-type" class="glass-select">
+                            <option value="comprehensive">Comprehensive Analysis (Exec Summary, Key Points, Risks...)</option>
+                            <option value="translate_hindi">Translate to Hindi</option>
+                            <option value="translate_english">Translate to English</option>
+                            <option value="rewrite_professional">Rewrite (Professional Tone)</option>
+                            <option value="rewrite_simple">Rewrite (Simple/Layman Tone)</option>
+                            <option value="generate_title">Generate SEO Titles</option>
+                            <option value="generate_faqs">Generate FAQs</option>
+                            <option value="generate_mcqs">Generate MCQs</option>
+                            <option value="generate_flashcards">Generate Flashcards</option>
+                        </select>
+                    </div>
+
+                    <button id="analyze-btn" class="btn-3d"><i class="fas fa-magic"></i> Analyze Document</button>
+                    
+                    <!-- Progress & Loading -->
+                    <div id="loading-container" class="loading-container hidden">
+                        <div class="spinner"></div>
+                        <div class="progress-bar-wrapper">
+                            <div id="progress-bar" class="progress-bar"></div>
+                        </div>
+                        <span id="loading-text">Analyzing document...</span>
+                    </div>
+                </section>
+
+                <section class="output-section">
+                    <div class="output-header">
+                        <h2><i class="fas fa-chart-line"></i> AI Analysis & Insights</h2>
+                        <div class="action-tools">
+                            <button id="copy-btn" class="icon-btn" title="Copy to Clipboard"><i class="fas fa-copy"></i></button>
+                            <button id="download-pdf-btn" class="icon-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+                            <button id="download-txt-btn" class="icon-btn" title="Download as TXT"><i class="fas fa-file-alt"></i></button>
+                            <button id="print-btn" class="icon-btn" title="Print Result"><i class="fas fa-print"></i></button>
+                            <button id="share-btn" class="icon-btn" title="Share"><i class="fas fa-share-alt"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div id="output-box" class="output-box">
+                        <div id="placeholder-text" class="placeholder">
+                            <i class="fas fa-file-contract"></i>
+                            <p>Awaiting document input to generate insights...</p>
+                        </div>
+                        <div id="streaming-content" class="markdown-body"></div>
+                    </div>
+                </section>
+            </div>
+            
+            <footer>
+                <p>&copy; 2026 DocuMind AI. Designed for maximum productivity.</p>
+            </footer>
+        </main>
+
+        <!-- Right Sidebar: Chat with Document -->
+        <aside id="chat-sidebar" class="sidebar glass-sidebar right-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-comments"></i> Chat with Doc</h2>
+                <button id="close-chat" class="icon-btn hide-desktop"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chat-container" id="chat-history">
+                <div class="chat-message ai-message">
+                    <div class="message-content">Hello! Upload a document and ask me anything about it. I will answer strictly based on the provided text.</div>
+                </div>
+            </div>
+            <div class="chat-input-wrapper">
+                <input type="text" id="chat-input" placeholder="Ask a question..." autocomplete="off" disabled>
+                <button id="send-chat-btn" class="btn-send" disabled><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script.js"></script>
+    
+    <!-- 3D Tilt Effect Script -->
+    <script>
+        const card = document.querySelector('.glass-container');
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth <= 768) return; // Disable on mobile and tablet for better performance
+            let xAxis = (window.innerWidth / 2 - e.pageX) / 80;
+            let yAxis = (window.innerHeight / 2 - e.pageY) / 80;
+            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+    </script>
+</body>
+</html>
