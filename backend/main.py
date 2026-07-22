@@ -3,7 +3,8 @@ import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from google import genai
 
@@ -39,6 +40,15 @@ app = FastAPI(
     description="Enterprise-Grade AI Document Analysis API",
     version="2.0.0"
 )
+
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
+
+app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+
+@app.get("/")
+async def home():
+    return FileResponse(os.path.join(frontend_path, "index.html"))
+
 
 # CORS Configuration for Frontend Connectivity
 app.add_middleware(
